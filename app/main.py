@@ -1,7 +1,6 @@
 import shutil
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from motor.motor_asyncio import AsyncIOMotorClient
 from uuid import uuid4
 import os
 
