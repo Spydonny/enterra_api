@@ -5,10 +5,10 @@ from typing import Optional
 import shutil
 import os
 
-from ..models import CompanyCreate, CompanyInDB, CompanyUpdate
-from ..schemas import CompanyOut
-from ..auth import hash_password, get_current_user
+from ..schemas import CompanyOut, CompanyCreate, CompanyInDB, CompanyUpdate
+from ..utils.auth import hash_password, get_current_user
 from ..db import db
+from ..utils.helpers import save_img
 
 
 router = APIRouter(prefix="/companies", tags=["companies"])
@@ -19,13 +19,13 @@ async def create_company(
     login: str = Form(...),
     password: str = Form(...),
     email: EmailStr = Form(...),
+    sphere: str = Form(...),
+    OKED: str = Form(...),
     description: Optional[str] = Form(None),
     website: Optional[str] = Form(None),
     location: Optional[str] = Form(None),
     phoneNumber: Optional[str] = Form(None),
-    sphere: str = Form(...),
-    OKED: str = Form(...),
-    avatar: Optional[UploadFile] = File(None),
+    logo: Optional[UploadFile] = File(None),
 ):
     data = {
         "name": name,
@@ -40,16 +40,7 @@ async def create_company(
         "sphere": sphere
     }
 
-    if avatar:
-        save_dir = "static/logos"
-        os.makedirs(save_dir, exist_ok=True)
-        fn = f"{uuid4().hex}_{avatar.filename}"
-        path = os.path.join(save_dir, fn)
-        with open(path, "wb") as buf:
-            shutil.copyfileobj(avatar.file, buf)
-        data["avatar"] = f"/{save_dir}/{fn}"
-    else:
-        data["avatar"] = File(None)
+    data["logo"] = save_img('logo', logo) if logo else None
 
     data["id"] = str(uuid4())
     await db.company.insert_one(data)

@@ -1,15 +1,14 @@
 from fastapi import APIRouter, HTTPException, Depends
 from uuid import UUID, uuid4
 from datetime import datetime
-from ..models import ReviewCreate, ReviewInDB, ReviewUpdate
-from ..schemas import ReviewOut
-from ..auth import get_current_user
+from ..schemas import ReviewOut, ReviewCreate, ReviewInDB, ReviewUpdate
+from ..utils.auth import get_current_user
 
 router = APIRouter(prefix="/reviews", tags=["reviews"], dependencies=[Depends(get_current_user)])
 
 @router.post("/", response_model=ReviewOut)
 async def create_review(payload: ReviewCreate):
-    data = payload.dict()
+    data = payload.model_dump()
     data.update({"id": uuid4(), "reviewer_id": get_current_user().id,
                  "timestamp": datetime.utcnow()})
     await router.state.db.review.insert_one(data)
