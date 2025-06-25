@@ -16,7 +16,6 @@ router = APIRouter(prefix="/companies", tags=["companies"])
 @router.post("/", response_model=CompanyOut)
 async def create_company(
     name: str = Form(...),
-    password: str = Form(...),
     email: EmailStr = Form(...),
     sphere: str = Form(...),
     OKED: str = Form(...),
@@ -26,9 +25,12 @@ async def create_company(
     phoneNumber: Optional[str] = Form(None),
     logo: Optional[UploadFile] = File(None),
 ):
+    doc = await db.company.find_one({"name": name})
+    if doc:
+        raise HTTPException(400, "Company with this name already exists")
+    
     data = {
         "name": name,
-        "password": hash_password(password),
         "email": email,
         "description": description,
         "website": website,
@@ -49,9 +51,16 @@ async def list_companies():
     docs = db.company.find({}, {"_id":0, "password":0})
     return [CompanyOut(**doc) async for doc in docs]
 
-@router.get("/{company_id}", response_model=CompanyOut)
+@router.get("/id/{company_id}", response_model=CompanyOut)
 async def read_company(company_id: UUID):
     doc = await db.company.find_one({"id": str(company_id)})
+    if not doc:
+        raise HTTPException(404, "Company not found")
+    return CompanyOut(**doc)
+
+@router.get("/name/{name}", response_model=CompanyOut)
+async def read_company(name: str):
+    doc = await db.company.find_one({"name": name})
     if not doc:
         raise HTTPException(404, "Company not found")
     return CompanyOut(**doc)
