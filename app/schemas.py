@@ -112,7 +112,6 @@ class MessageBase(BaseModel):
     content: str = Field(..., min_length=1)
 
 class MessageCreate(MessageBase):
-    room_id: UUID
     image: Optional[UploadFile] = File(None)
 
 class MessageUpdate(BaseModel):

@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from uuid import UUID
 
 from ..settings import settings
-from ..schemas import UserInDB  
+from ..schemas import UserInDB, CompanyInDB
 from app.db import db
 
 bcrypt_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -31,10 +31,10 @@ async def get_user_by_NationalID(NationalID: str) -> UserInDB | None:
         return UserInDB(**data)
     return None
 
-async def get_companies(id: UUID) -> UserInDB | None:
-    data = await db.companies.find_one({"id": id})
+async def get_companies(id: UUID) -> CompanyInDB | None:
+    data = await db.company.find_one({"id": str(id)})
     if data:
-        return UserInDB(**data)
+        return CompanyInDB(**data)
     return None
 
 async def get_current_user(token: str = Depends(oauth2_scheme)) -> UserInDB:

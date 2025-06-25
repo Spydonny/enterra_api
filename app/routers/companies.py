@@ -16,7 +16,6 @@ router = APIRouter(prefix="/companies", tags=["companies"])
 @router.post("/", response_model=CompanyOut)
 async def create_company(
     name: str = Form(...),
-    login: str = Form(...),
     password: str = Form(...),
     email: EmailStr = Form(...),
     sphere: str = Form(...),
@@ -29,7 +28,6 @@ async def create_company(
 ):
     data = {
         "name": name,
-        "login": login,
         "password": hash_password(password),
         "email": email,
         "description": description,
@@ -53,14 +51,14 @@ async def list_companies():
 
 @router.get("/{company_id}", response_model=CompanyOut)
 async def read_company(company_id: UUID):
-    doc = await db.company.find_one({"id": company_id}, {"_id":0, "password":0})
+    doc = await db.company.find_one({"id": str(company_id)})
     if not doc:
         raise HTTPException(404, "Company not found")
     return CompanyOut(**doc)
 
 @router.put("/{company_id}", response_model=CompanyOut)
 async def update_company(company_id: UUID, payload: CompanyUpdate):
-    data = payload.dict(exclude_unset=True)
+    data = payload.model_dump(exclude_unset=True)
     if "password" in data:
         data["password"] = hash_password(data["password"])
     res = await db.company.update_one({"id": company_id}, {"$set": data})

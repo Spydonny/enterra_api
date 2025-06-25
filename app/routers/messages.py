@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
+from fastapi import APIRouter, Form, HTTPException, Depends, UploadFile, File
 from uuid import UUID, uuid4
 from datetime import datetime
 
@@ -52,41 +52,43 @@ async def create_message_room(
 @router.post("/{message_room_id}", response_model=MessageOut)
 async def create_message(
     message_room_id: UUID,
-    payload: MessageCreate,
+    content: str = Form(...),
     image: UploadFile = File(None),
     user: UserInDB = Depends(get_current_user)
 ):
-    data = payload.model_dump()
+    data = {}
 
     data.update({
         "id": uuid4(),
         "room_id": message_room_id,
         "sender_id": user.id,
+        "content": content,
         "image": image.filename if image else None,
         "timestamp": datetime.utcnow(),
         "status": "loading", 
         "image": save_img('message', image) if image else None
     })
+
     await db.message.insert_one(data)
     return MessageOut(**data)
 
 @router.get("/{message_room_id}", response_model=list[MessageOut])
 async def list_messages(message_room_id: UUID):
-    docs = db.message.find({"message_room_id": message_room_id}, {"_id": 0})
+    docs = db.message.find({"room_id": message_room_id}, {"_id": 0})
     return [MessageOut(**doc) async for doc in docs]
 
 @router.get("/{message_room_id}/{message_id}", response_model=MessageOut)
 async def read_message(message_room_id: UUID, message_id: UUID):
-    doc = await db.message.find_one({"id": message_id, "message_room_id": message_room_id}, {"_id": 0})
+    doc = await db.message.find_one({"id": message_id, "room_id": message_room_id}, {"_id": 0})
     if not doc:
         raise HTTPException(404, "Message not found")
     return MessageOut(**doc)
 
 @router.put("/{message_room_id}/{message_id}", response_model=MessageOut)
 async def update_message(message_room_id: UUID, message_id: UUID, payload: MessageUpdate):
-    data = payload.dict(exclude_unset=True)
+    data = payload.model_dump(exclude_unset=True)
     res = await db.message.update_one(
-        {"id": message_id, "message_room_id": message_room_id},
+        {"id": message_id, "room_id": message_room_id},
         {"$set": data}
     )
     if res.matched_count == 0:
@@ -95,7 +97,7 @@ async def update_message(message_room_id: UUID, message_id: UUID, payload: Messa
 
 @router.delete("/{message_room_id}/{message_id}")
 async def delete_message(message_room_id: UUID, message_id: UUID):
-    res = await db.message.delete_one({"id": message_id, "message_room_id": message_room_id})
+    res = await db.message.delete_one({"id": message_id, "room_id": message_room_id})
     if res.deleted_count == 0:
         raise HTTPException(404, "Message not found")
     return {"detail": "Deleted"}

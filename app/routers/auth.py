@@ -13,7 +13,7 @@ from ..schemas import UserOut
 from ..utils.helpers import save_img
 
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter( tags=["auth"])
 
 @router.post("/token", response_model=TokenResponse)
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
@@ -39,7 +39,9 @@ async def register(
             detail="NatinalID already registered"
         )
     
-    if await get_companies(company_id) is None:
+    doc = await db.company.find_one({"id": str(company_id)})
+
+    if doc is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Company not found"
