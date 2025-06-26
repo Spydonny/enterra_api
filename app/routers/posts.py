@@ -6,6 +6,7 @@ import os
 
 from ..schemas import PostOut, PostCreate, PostInDB, PostUpdate, UserInDB
 from ..utils.auth import get_current_user
+from ..utils.helpers import get_company_name, save_img
 from ..db import db
 
 
@@ -18,25 +19,17 @@ async def create_post(
     user: UserInDB = Depends(get_current_user)
 ):
     post_id = uuid4()
-    image_path = None
-
-    if image:
-        save_dir = "static/post_images"
-        os.makedirs(save_dir, exist_ok=True)
-        filename = f"{uuid4().hex}_{image.filename}"
-        full_path = os.path.join(save_dir, filename)
-
-        with open(full_path, "wb") as buffer:
-            shutil.copyfileobj(image.file, buffer)
-
-        image_path = f"/{save_dir}/{filename}"
+    image_path = save_img("post_image", image) if image else None
+    company_name = await get_company_name(user.company_id)
 
     post_data = {
         "id": post_id,
         "content": content,
         "image": image_path,
         "sender_id": user.id,
+        "sender_name": user.fullname,
         "company_id": user.company_id,
+        "company_name": company_name,
         "timestamp": datetime.utcnow(),
         "likes": 0
     }

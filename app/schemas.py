@@ -83,7 +83,9 @@ class PostInDB(PostBase):
     id: UUID
     image: Optional[str]
     sender_id: UUID
+    sender_name: str
     company_id: UUID
+    company_name: str
     likes: int
     timestamp: datetime
 
