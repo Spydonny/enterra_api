@@ -104,7 +104,7 @@ async def read_message(message_room_id: UUID, message_id: UUID):
 async def mark_message_as_read(message_room_id: UUID, message_id: UUID):
     res = await db.message.update_one(
         {"id": message_id, "room_id": message_room_id},
-        {"$set": {"is_read": True}}
+        {"$set": {"status": 'read'}}
     )
 
     if res.matched_count == 0:
