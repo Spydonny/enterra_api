@@ -33,6 +33,13 @@ async def read_user(user_id: UUID):
         raise HTTPException(404, "User not found")
     return UserOut(**doc)
 
+@router.get("/{name}", response_model=UserOut)
+async def read_user(name: UUID):
+    doc = await db.users.find_one({"fullname": name}, {"_id":0, "password":0})
+    if not doc:
+        raise HTTPException(404, "User not found")
+    return UserOut(**doc)
+
 @router.put("/{user_id}", response_model=UserOut)
 async def update_user(user_id: UUID, payload: UserUpdate):
     data = payload.model_dump(exclude_unset=True)

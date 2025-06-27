@@ -53,9 +53,11 @@ async def register(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="User with this NationalID already exists in this company"
         )
+    
+    id = uuid4()
 
     user_dict = {
-        "id": uuid4(),
+        "id": id,
         "company_id": company_id,
         "fullname": fullname,
         "NationalID": NationalID,
