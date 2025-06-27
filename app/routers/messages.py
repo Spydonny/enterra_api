@@ -100,6 +100,27 @@ async def read_message(message_room_id: UUID, message_id: UUID):
         raise HTTPException(404, "Message not found")
     return MessageOut(**doc)
 
+@router.put("/{message_room_id}/{message_id}/read", response_model=MessageOut)
+async def mark_message_as_read(message_room_id: UUID, message_id: UUID):
+    res = await db.message.update_one(
+        {"id": message_id, "room_id": message_room_id},
+        {"$set": {"is_read": True}}
+    )
+
+    if res.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Message not found")
+
+    message = await db.message.find_one(
+        {"id": message_id, "room_id": message_room_id},
+        {"_id": 0}
+    )
+
+    if not message:
+        raise HTTPException(status_code=404, detail="Message not found after update")
+
+    return MessageOut(**message)
+
+
 @router.put("/{message_room_id}/{message_id}", response_model=MessageOut)
 async def update_message(message_room_id: UUID, message_id: UUID, payload: MessageUpdate):
     data = payload.model_dump(exclude_unset=True)
