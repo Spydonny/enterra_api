@@ -9,7 +9,7 @@ from ..utils.helpers import save_img
 
 router = APIRouter(prefix="/messages", tags=["messages"], dependencies=[Depends(get_current_user)])
 
-@router.post("/rooms/", response_model=MessageRoomOut)
+@router.post("/", response_model=MessageRoomOut)
 async def create_message_room(
     payload: MessageRoomCreate,
     user: UserInDB = Depends(get_current_user)
@@ -77,6 +77,22 @@ async def list_messages(message_room_id: UUID):
     docs = db.message.find({"room_id": message_room_id}, {"_id": 0})
     return [MessageOut(**doc) async for doc in docs]
 
+@router.get("/{message_room_id}/last", response_model=MessageOut)
+async def get_last_message(message_room_id: UUID):
+    doc = await db.message.find_one(
+        {"room_id": message_room_id},
+        sort=[("created_at", -1)],
+        projection={"_id": 0}
+    )
+    if not doc:
+        raise HTTPException(status_code=404, detail="No messages found in this room")
+    return MessageOut(**doc)
+
+@router.get("/", response_model=list[MessageRoomOut])
+async def list_message_rooms(user: UserInDB = Depends(get_current_user)):
+    docs = db.message_rooms.find({"participants": str(user.id)}, {"_id": 0})
+    return [MessageRoomOut(**doc) async for doc in docs]
+
 @router.get("/{message_room_id}/{message_id}", response_model=MessageOut)
 async def read_message(message_room_id: UUID, message_id: UUID):
     doc = await db.message.find_one({"id": message_id, "room_id": message_room_id}, {"_id": 0})
@@ -101,3 +117,4 @@ async def delete_message(message_room_id: UUID, message_id: UUID):
     if res.deleted_count == 0:
         raise HTTPException(404, "Message not found")
     return {"detail": "Deleted"}
+
