@@ -70,7 +70,7 @@ async def update_company(company_id: UUID, payload: CompanyUpdate):
     data = payload.model_dump(exclude_unset=True)
     if "password" in data:
         data["password"] = hash_password(data["password"])
-    res = await db.company.update_one({"id": company_id}, {"$set": data})
+    res = await db.company.update_one({"id": str(company_id)}, {"$set": data})
     if res.matched_count == 0:
         raise HTTPException(404, "Company not found")
     return await read_company(company_id)
