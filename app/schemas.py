@@ -26,7 +26,7 @@ class CompanyUpdate(BaseModel):
     website: Optional[str]
     location: Optional[str]
     phone_number: Optional[str]
-    logo: Optional[UploadFile] = File(None)
+
 
 class CompanyInDB(CompanyBase):
     id: UUID
