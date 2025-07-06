@@ -14,7 +14,11 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
+
 for r in [companies, users, posts, messages, reviews, auth]:
     app.include_router(r)
 
+@app.get("/")
+async def root():
+    return {"message": "Welcome to Enterra API"}
 

@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Query
+from typing import List
 from uuid import UUID, uuid4
 from fastapi.security import OAuth2PasswordRequestForm
 
@@ -39,6 +40,15 @@ async def read_user(name: UUID):
     if not doc:
         raise HTTPException(404, "User not found")
     return UserOut(**doc)
+
+@router.get("/search/", response_model=List[UserOut])
+async def search_users_by_name(part: str = Query(..., min_length=1)):
+    cursor = db.users.find(
+        {"fullname": {"$regex": part, "$options": "i"}},  # нечувствительно к регистру
+        {"_id": 0, "password": 0}
+    )
+    results = await cursor.to_list(length=50)  # ограничим количество результатов
+    return [UserOut(**user) for user in results]
 
 @router.put("/{user_id}", response_model=UserOut)
 async def update_user(user_id: UUID, payload: UserUpdate):

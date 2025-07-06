@@ -1,5 +1,6 @@
 from datetime import datetime
-from fastapi import APIRouter, Form, HTTPException, Depends, UploadFile, File
+from fastapi import APIRouter, Form, HTTPException, Depends, UploadFile, File, Query
+from typing import List, Optional
 from uuid import UUID, uuid4
 import shutil
 import os
@@ -76,3 +77,18 @@ async def like_post(post_id: UUID):
     if res.matched_count == 0:
         raise HTTPException(404, "Post not found")
     return await read_post(post_id)
+
+@router.get("/search/", response_model=List[PostOut])
+async def search_posts(part: str = Query(..., min_length=1)):
+    cursor = db.posts.find(
+        {
+            "$or": [
+                {"company_name": {"$regex": part, "$options": "i"}},
+                {"content": {"$regex": part, "$options": "i"}},
+                {"sender_name": {"$regex": part, "$options": "i"}}
+            ]
+        },
+        {"_id": 0}
+    )
+    results = await cursor.to_list(length=50)
+    return [PostOut(**doc) for doc in results]

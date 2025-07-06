@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Form, File, UploadFile
+from fastapi import APIRouter, HTTPException, Form, File, UploadFile, Depends, Query
+from typing import List
 from pydantic import EmailStr
 from uuid import UUID, uuid4
 from typing import Optional
@@ -81,3 +82,12 @@ async def delete_company(company_id: UUID):
     if res.deleted_count == 0:
         raise HTTPException(404, "Company not found")
     return {"detail": "Deleted"}
+
+@router.get("/search/", response_model=List[CompanyOut])
+async def search_users_by_name(part: str = Query(..., min_length=1)):
+    cursor = db.users.find(
+        {"name": {"$regex": part, "$options": "i"}},  # нечувствительно к регистру
+        {"_id": 0, "password": 0}
+    )
+    results = await cursor.to_list(length=50)  # ограничим количество результатов
+    return [CompanyOut(**user) for user in results]
