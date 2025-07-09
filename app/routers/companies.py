@@ -20,6 +20,9 @@ async def create_company(
     email: EmailStr = Form(...),
     sphere: str = Form(...),
     OKED: str = Form(...),
+    is_investor: bool = Form(False),
+    type_of_registration: str = Form(...),
+    status: str = Form("free"),
     description: Optional[str] = Form(None),
     website: Optional[str] = Form(None),
     location: Optional[str] = Form(None),
@@ -33,12 +36,16 @@ async def create_company(
     data = {
         "name": name,
         "email": email,
+        "OKED": OKED, 
+        "sphere": sphere,
+        "isInvestor": is_investor,
+        "typeOfRegistration": type_of_registration,
+        "status": status,
         "description": description,
         "website": website,
         "location": location,
         "phoneNumber": phoneNumber,
-        "OKED": OKED, 
-        "sphere": sphere
+
     }
 
     data["logo"] = save_img('logo', logo) if logo else None

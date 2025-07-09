@@ -11,6 +11,9 @@ class CompanyBase(BaseModel):
     email: EmailStr
     sphere: str
     OKED: str
+    is_investor: bool
+    type_of_registration: str
+    status: str = 'free'  # default status
     description: Optional[str] = None
     website: Optional[str] = None
     location: Optional[str] = None
