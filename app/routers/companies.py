@@ -45,7 +45,6 @@ async def create_company(
         "website": website,
         "location": location,
         "phoneNumber": phoneNumber,
-
     }
 
     data["logo"] = save_img('logo', logo) if logo else None
