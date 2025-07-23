@@ -66,7 +66,7 @@ async def read_company(company_id: UUID):
     return CompanyOut(**doc)
 
 @router.get("/name/{name}", response_model=CompanyOut)
-async def read_company(name: str):
+async def read_company_by_name(name: str):
     doc = await db.company.find_one({"name": name})
     if not doc:
         raise HTTPException(404, "Company not found")
@@ -75,11 +75,14 @@ async def read_company(name: str):
 @router.put("/{company_id}", response_model=CompanyOut)
 async def update_company(company_id: UUID, payload: CompanyUpdate):
     data = payload.model_dump(exclude_unset=True)
+
     if "password" in data:
         data["password"] = hash_password(data["password"])
+
     res = await db.company.update_one({"id": str(company_id)}, {"$set": data})
     if res.matched_count == 0:
         raise HTTPException(404, "Company not found")
+
     return await read_company(company_id)
 
 @router.delete("/{company_id}")

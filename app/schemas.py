@@ -23,8 +23,18 @@ class CompanyBase(BaseModel):
 class CompanyCreate(CompanyBase):
     logo: Optional[UploadFile] = File(None)
 
-class CompanyUpdate(CompanyBase):
-    pass
+class CompanyUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    sphere: Optional[str] = None
+    OKED: Optional[str] = None
+    typeOrg: Optional[str] = None
+    type_of_registration: Optional[str] = None
+    status: Optional[str] = None
+    description: Optional[str] = None
+    website: Optional[str] = None
+    location: Optional[str] = None
+    phone_number: Optional[str] = None
 
 
 class CompanyInDB(CompanyBase):
