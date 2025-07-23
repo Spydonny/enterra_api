@@ -18,17 +18,13 @@ class CompanyBase(BaseModel):
     website: Optional[str] = None
     location: Optional[str] = None
     phone_number: Optional[str] = None
+    
 
 class CompanyCreate(CompanyBase):
     logo: Optional[UploadFile] = File(None)
 
-class CompanyUpdate(BaseModel):
-    name: Optional[str]
-    email: Optional[EmailStr]
-    description: Optional[str]
-    website: Optional[str]
-    location: Optional[str]
-    phone_number: Optional[str]
+class CompanyUpdate(CompanyBase):
+    pass
 
 
 class CompanyInDB(CompanyBase):
