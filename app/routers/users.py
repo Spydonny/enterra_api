@@ -21,6 +21,29 @@ async def login(form_data: OAuth2PasswordRequestForm):
 
     return user
 
+@router.post("/", response_model=UserOut)
+async def create_user(
+    fullname: str,
+    NationalID: str,
+    position: str,
+    company_id: UUID,
+    password: str
+):
+    existing_user = await db.users.find_one({"NationalID": NationalID})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="User with this National ID already exists")
+
+    user_data = {
+        "id": str(uuid4()),
+        "fullname": fullname,
+        "NationalID": NationalID,
+        "position": position,
+        "company_id": company_id,
+        "password": hash_password(password)
+    }
+
+    await db.users.insert_one(user_data)
+    return UserOut(**user_data)
 
 @router.get("/", response_model=list[UserOut])
 async def list_users():

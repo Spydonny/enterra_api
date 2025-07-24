@@ -20,36 +20,56 @@ async def create_company(
     email: EmailStr = Form(...),
     sphere: str = Form(...),
     OKED: str = Form(...),
-    type_org: str = Form('startup'),
+    type_org: str = Form("startup"),
     type_of_registration: str = Form(...),
     status: str = Form("free"),
     description: Optional[str] = Form(None),
     website: Optional[str] = Form(None),
     location: Optional[str] = Form(None),
-    phoneNumber: Optional[str] = Form(None),
+    phone_number: Optional[str] = Form(None),
+    business_model: Optional[str] = Form(None),
+    investment_round: Optional[str] = Form(None),
+    investment_required: Optional[float] = Form(None),
+    investment_offered: Optional[float] = Form(None),
+    income: Optional[float] = Form(None),
+    clients: Optional[int] = Form(None),
+    mid_receipt: Optional[float] = Form(None),
+    CAC: Optional[float] = Form(None),
+    LTV: Optional[float] = Form(None),
+    total_revenue: Optional[float] = Form(None),
     logo: Optional[UploadFile] = File(None),
 ):
-    doc = await db.company.find_one({"name": name})
-    if doc:
-        raise HTTPException(400, "Company with this name already exists")
-    
+    # Проверка на уникальность по имени или email
+    existing = await db.company.find_one({"$or": [{"name": name}, {"email": email}]})
+    if existing:
+        raise HTTPException(400, "Company with this name or email already exists")
+
     data = {
+        "id": str(uuid4()),
         "name": name,
         "email": email,
-        "OKED": OKED, 
         "sphere": sphere,
+        "OKED": OKED,
         "typeOrg": type_org,
         "type_of_registration": type_of_registration,
         "status": status,
         "description": description,
         "website": website,
         "location": location,
-        "phoneNumber": phoneNumber,
+        "phone_number": phone_number,
+        "business_model": business_model,
+        "investment_round": investment_round,
+        "investment_required": investment_required,
+        "investment_offered": investment_offered,
+        "income": income,
+        "clients": clients,
+        "mid_receipt": mid_receipt,
+        "CAC": CAC,
+        "LTV": LTV,
+        "total_revenue": total_revenue,
+        "logo": save_img("logo", logo) if logo else None,
     }
 
-    data["logo"] = save_img('logo', logo) if logo else None
-
-    data["id"] = str(uuid4())
     await db.company.insert_one(data)
     return CompanyInDB(**data)
 

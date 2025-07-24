@@ -18,7 +18,16 @@ class CompanyBase(BaseModel):
     website: Optional[str] = None
     location: Optional[str] = None
     phone_number: Optional[str] = None
-    
+    business_model: Optional[str] = None 
+    investment_round: Optional[str] = None
+    investment_required: Optional[float] = None
+    investment_offered: Optional[float] = None
+    income: Optional[float] = None
+    clients: Optional[int] = None
+    mid_receipt: Optional[float] = None
+    CAC: Optional[float] = None
+    LTV: Optional[float] = None
+    total_revenue: Optional[float] = None
 
 class CompanyCreate(CompanyBase):
     logo: Optional[UploadFile] = File(None)
@@ -54,6 +63,8 @@ class UserBase(BaseModel):
     fullname: str = Field(..., min_length=1)
     NationalID: str = Field(..., min_length=12, max_length=12)
     position: str = Field(..., min_length=1)
+    expierience: Optional[str] = None
+    motivation: Optional[str] = None
 
 class UserCreateBody(UserBase):
     password: str = Field(..., min_length=6)
@@ -62,6 +73,8 @@ class UserUpdate(BaseModel):
     fullname: Optional[str]
     position: Optional[str]
     password: Optional[str]
+    expierience: Optional[str] = None
+    motivation: Optional[str] = None
 
 class UserInDB(UserBase):
     id: UUID
