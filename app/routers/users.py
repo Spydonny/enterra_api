@@ -1,5 +1,6 @@
+from datetime import datetime
 from fastapi import APIRouter, HTTPException, Depends, Query
-from typing import List
+from typing import List, Optional
 from uuid import UUID, uuid4
 from fastapi.security import OAuth2PasswordRequestForm
 
@@ -27,7 +28,9 @@ async def create_user(
     NationalID: str,
     position: str,
     company_id: UUID,
-    password: str
+    password: str,
+    experience: Optional[str] = None,
+    motivation: Optional[str] = None
 ):
     existing_user = await db.users.find_one({"NationalID": NationalID})
     if existing_user:
@@ -39,7 +42,11 @@ async def create_user(
         "NationalID": NationalID,
         "position": position,
         "company_id": company_id,
-        "password": hash_password(password)
+        "password": hash_password(password),
+        "experience": experience,
+        "motivation": motivation,
+        "created_at": datetime.utcnow(),
+        "avatar": None  # Default avatar can be set later
     }
 
     await db.users.insert_one(user_data)
@@ -58,7 +65,7 @@ async def read_user(user_id: UUID):
     return UserOut(**doc)
 
 @router.get("/name/{name}", response_model=UserOut)
-async def read_user_by_name(name: UUID):
+async def read_user_by_name(name: str):
     doc = await db.users.find_one({"fullname": name}, {"_id":0, "password":0})
     if not doc:
         raise HTTPException(404, "User not found")
@@ -66,7 +73,7 @@ async def read_user_by_name(name: UUID):
 
 @router.get("/company/{company_id}", response_model=list[UserOut])
 async def list_users_by_company(company_id: UUID):
-    cursor = db.users.find({"company_id": str(company_id)}, {"_id": 0, "password": 0})
+    cursor = db.users.find({"company_id": company_id}, {"_id": 0, "password": 0})
     return [UserOut(**doc) async for doc in cursor]
 
 @router.get("/search/", response_model=List[UserOut])
