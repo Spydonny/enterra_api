@@ -63,7 +63,7 @@ class UserBase(BaseModel):
     fullname: str = Field(..., min_length=1)
     NationalID: str = Field(..., min_length=12, max_length=12)
     position: str = Field(..., min_length=1)
-    expierience: Optional[str] = None
+    experience: Optional[str] = None
     motivation: Optional[str] = None
 
 class UserCreateBody(UserBase):
@@ -73,7 +73,7 @@ class UserUpdate(BaseModel):
     fullname: Optional[str]
     position: Optional[str]
     password: Optional[str]
-    expierience: Optional[str] = None
+    experience: Optional[str] = None
     motivation: Optional[str] = None
 
 class UserInDB(UserBase):
