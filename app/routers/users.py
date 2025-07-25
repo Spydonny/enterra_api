@@ -57,12 +57,17 @@ async def read_user(user_id: UUID):
         raise HTTPException(404, "User not found")
     return UserOut(**doc)
 
-@router.get("/{name}", response_model=UserOut)
-async def read_user(name: UUID):
+@router.get("/name/{name}", response_model=UserOut)
+async def read_user_by_name(name: UUID):
     doc = await db.users.find_one({"fullname": name}, {"_id":0, "password":0})
     if not doc:
         raise HTTPException(404, "User not found")
     return UserOut(**doc)
+
+@router.get("/company/{company_id}", response_model=list[UserOut])
+async def list_users_by_company(company_id: UUID):
+    cursor = db.users.find({"company_id": str(company_id)}, {"_id": 0, "password": 0})
+    return [UserOut(**doc) async for doc in cursor]
 
 @router.get("/search/", response_model=List[UserOut])
 async def search_users_by_name(part: str = Query(..., min_length=1)):
