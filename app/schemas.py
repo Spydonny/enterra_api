@@ -171,8 +171,10 @@ class ReviewUpdate(BaseModel):
 class ReviewInDB(ReviewBase):
     id: UUID
     reviewer_id: UUID
+    reviewer_name: str
     company_id: UUID
     timestamp: datetime
+
 
     model_config = {
         "from_attributes": True  

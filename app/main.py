@@ -27,4 +27,3 @@ app.mount("/static", StaticFiles(directory=static_path), name="static")
 @app.get("/")
 async def root():
     return {"message": "Welcome to Enterra API"}
-
