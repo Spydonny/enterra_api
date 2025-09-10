@@ -107,7 +107,7 @@ async def update_company(company_id: UUID, payload: CompanyUpdate):
 
 @router.delete("/{company_id}")
 async def delete_company(company_id: UUID):
-    res = await db.company.delete_one({"id": company_id})
+    res = await db.company.delete_one({"id": str(company_id)})
     if res.deleted_count == 0:
         raise HTTPException(404, "Company not found")
     return {"detail": "Deleted"}
