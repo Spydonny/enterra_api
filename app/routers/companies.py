@@ -69,6 +69,11 @@ async def create_company(
         "total_revenue": total_revenue,
         "logo": save_img("logo", logo) if logo else None,
     }
+    try :
+        CompanyInDB(**data)
+    except Exception as e :
+        raise HTTPException(400, f"Invalid data: {e}")
+    
 
     await db.company.insert_one(data)
     return CompanyInDB(**data)
