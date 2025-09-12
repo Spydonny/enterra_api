@@ -100,6 +100,7 @@ class PostCreate(PostBase):
 class PostUpdate(BaseModel):
     content: Optional[str]
     likes: Optional[int]
+    ids_liked: List[UUID] = []
 
 class PostInDB(PostBase):
     id: UUID
@@ -109,6 +110,7 @@ class PostInDB(PostBase):
     company_id: UUID
     company_name: str
     likes: int
+    ids_liked: List[UUID] = []
     timestamp: datetime
 
     model_config = {

@@ -72,10 +72,28 @@ async def delete_post(post_id: UUID):
     return {"detail": "Deleted"}
 
 @router.post("/{post_id}/like", response_model=PostOut)
-async def like_post(post_id: UUID):
-    res = await db.post.update_one({"id": post_id}, {"$inc": {"likes": 1}})
+async def like_post(post_id: UUID, user_id: UUID):
+    # проверим, существует ли пост
+    post = await db.post.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(404, "Post not found")
+
+    # проверим, лайкал ли уже этот пользователь
+    if user_id in post.get("ids_liked", []):
+        raise HTTPException(400, "You already liked this post")
+
+    # добавляем лайк и user_id в список
+    res = await db.post.update_one(
+        {"id": post_id},
+        {
+            "$inc": {"likes": 1},
+            "$push": {"ids_liked": user_id}
+        }
+    )
+
     if res.matched_count == 0:
         raise HTTPException(404, "Post not found")
+
     return await read_post(post_id)
 
 @router.get("/search/", response_model=List[PostOut])
